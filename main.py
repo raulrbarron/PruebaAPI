@@ -39,7 +39,7 @@ def root():
 # Obtener todos los libros
 
 
-@app.route("/libros")
+@app.route("/libros",  methods=['GET'])
 def get_libros():
     libro = libros
     return jsonify(libro), 200
@@ -47,9 +47,13 @@ def get_libros():
 # Obtener un libro por ID
 
 
-@app.route("/libros/1")
-def get_librosID():
-    return jsonify(libros[1]), 200
+@app.route('/libros/<int:libro_id>', methods=['GET'])
+def get_libro(libro_id):
+    libro = libros.get(libro_id)
+
+    respuesta = libro.copy()
+    respuesta['id'] = libro_id
+    return jsonify(respuesta), 200
 
 # POST -> Crear Informacion
 
@@ -57,42 +61,64 @@ def get_librosID():
 
 
 @app.route('/libros', methods=['POST'])
-def create_user():
-    data = request.get_json()
-    # data = {
-    #     "titulo": "Nuevo libro",
-    #     "autor": "Autor",
-    #     "anio": 2020,
-    #     "genero": "novela",
-    #     "disponible": True,
-    #     "calificacion": 8.5
-    # }
+def create_libro():
+    data = request.json
 
-    # data['status'] = "libro creado"
-    return jsonify(data), 201
+    if not data or 'titulo' not in data or 'autor' not in data:
+        return jsonify({"error": "Título y Autor son obligatorios"}), 400
+
+    nuevo_id = 4
+
+    nuevo_libro = {
+        "titulo": data['titulo'],
+        "autor": data['autor'],
+        "anio": data.get('anio', 2020),
+        "genero": data.get('genero', "novela"),
+        "disponible": data.get('disponible', True),
+        "calificacion": data.get('calificacion', 8.5)
+    }
+
+    libros[nuevo_id] = nuevo_libro
+    return jsonify({"id": nuevo_id, **nuevo_libro}), 201
 
 
 # Reemplazar un libro completo
 
 
-@app.route('/libros', methods=['PUT'])
-def replace_user():
+@app.route('/libros/<int:libro_id>', methods=['PUT'])
+def replace_libro(libro_id):
     data = request.get_json()
-    global libros
-    libros = data
-    return jsonify({"message": "Libro fully replaced", "libro": libros})
+
+    libro = libros[libro_id]
+    libro["titulo"] = data.get("titulo", "nuevo libro")
+    libro["autor"] = data.get("autor", "autor")
+    libro['anio'] = data.get("anio", 2020)
+    libro['genero'] = data.get('genero', "novela")
+    libro['disponible'] = data.get('disponible', True)
+    libro['calificacion'] = data.get('calificacion', 8.5)
+    return jsonify(libro), 200
+    # return jsonify({"message": "Libro fully replaced"})
 
 # Actualizar parcialmente
 
 
-@app.route('/libros', methods=['PATCH'])
-def update_user():
+@app.route('/libros/<int:libro_id>', methods=['PATCH'])
+def update_libro(libro_id):
     data = request.get_json()
-    global libros
-    libros.update(data)
-    return jsonify({"message": "Libro partially updated", "libro": libros})
+    libro = libros[libro_id]
+    libro["calificacion"] = data.get("calificacion", 8)
+    return jsonify(libro), 200
 
 # Eliminar un libro
+
+
+@app.route('/libros/<int:libro_id>', methods=['DELETE'])
+def delete_libro(libro_id):
+    if libro_id not in libros:
+        return jsonify({"error": "Libro no encontrado"}), 404
+    else:
+        del libros[libro_id]
+        return jsonify({"mensaje": "Libro eliminado correctamente"}), 200
 
 
 if __name__ == "__main__":
