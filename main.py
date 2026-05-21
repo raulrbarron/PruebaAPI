@@ -1,4 +1,5 @@
 from flask import Flask, jsonify, request
+import random
 
 app = Flask(__name__)
 
@@ -26,6 +27,14 @@ libros = {
         "genero": "fábula",
         "disponible": False,
         "calificacion": 8.8
+    },
+    4: {
+        "titulo": "Harry Potter y la cámara secreta",
+        "autor": "J.K. Rowling",
+        "anio": 1998,
+        "genero": "aventura fantástica",
+        "disponible": False,
+        "calificacion": 9.7
     }
 }
 
@@ -119,6 +128,141 @@ def delete_libro(libro_id):
     else:
         del libros[libro_id]
         return jsonify({"mensaje": "Libro eliminado correctamente"}), 200
+
+# ejercicios de David
+
+
+@app.route('/libros/eliminar-autor', methods=['DELETE'])
+def eliminar_autor():
+    autor = request.args.get('autor')
+
+    global libros
+    nuevo_diccionario = {}
+
+    for id_lib, datos in libros.items():
+        # Si el autor NO es el que quiero borrar, lo guardo
+        if datos['autor'].lower() != autor.lower():
+            nuevo_diccionario[id_lib] = datos
+
+    libros = nuevo_diccionario
+
+    return jsonify({
+        "mensaje": f"Operación exitosa",
+        "autor_eliminado": autor
+
+    }), 200
+
+
+@app.route('/libros/actualizar-libros', methods=['POST'])
+def actualizar_libros():
+
+    data = request.json
+    # validamos los datos que necesitamos
+    nombre = data.get('nombre')
+    nuevo_genero = data.get('genero')
+    nueva_disponibilidad = data.get('disponible')
+
+    if not nombre:
+        return jsonify({"error": "Falta el nombre para buscar el titulo"}), 400
+
+    actualizados = 0
+    libros_modificados = []
+
+    for id_lib, datos in libros.items():
+        if nombre.lower() in datos['titulo'].lower():
+            # Actualizamos los campos del JSON
+            if nuevo_genero:
+                datos['genero'] = nuevo_genero
+            # Usamos is not None porque False es un valor válido
+            if nueva_disponibilidad is not None:
+                datos['disponible'] = nueva_disponibilidad
+
+            actualizados += 1
+            libros_modificados.append({
+                "id": id_lib,
+                "titulo": datos['titulo'],
+                "nuevo_genero": datos['genero'],
+                "nueva_disponibilidad": datos['disponible']
+            })
+
+    return jsonify({
+        "status": "success",
+        "total_afectados": actualizados,
+        "detalles": libros_modificados
+    }), 200
+
+
+@app.route('/libros/calificar-por-epoca', methods=['PUT'])
+def calificar_por_epoca():
+    actualizados = 0
+    cambios = []
+
+    # recorremos la lista
+    for id_lib, datos in libros.items():
+
+        if datos['anio'] >= 1900 and datos['anio'] <= 2000:
+            calificacion_anterior = datos['calificacion']
+
+            nueva_calificacion = round(random.uniform(8.0, 9.7), 1)
+
+            datos['calificacion'] = nueva_calificacion
+
+            actualizados += 1
+
+            cambios.append({
+                "titulo": datos['titulo'],
+                "anio": datos['anio'],
+                "calificacion_anterior": calificacion_anterior,
+                "nueva_calificacion": nueva_calificacion
+            })
+
+    if actualizados == 0:
+        return jsonify({"mensaje": "No se encontraron libros en ese rango de años"}), 404
+
+    return jsonify({
+        "status": "success",
+        "total_libros_afectados": actualizados,
+        "cambios": cambios
+    }), 200
+
+
+@app.route('/libros/agregar-categoria', methods=['POST'])
+def agregar_categoria():
+    actualizados = 0
+    resumen = []
+
+    for id_lib, datos in libros.items():
+
+        nota = datos.get('calificacion', 0.0)
+
+        if nota >= 9.6:
+            categoria = "S+"
+        elif nota >= 9.1:
+            categoria = "S"
+        elif nota >= 8.5:
+            categoria = "A"
+        elif nota >= 7.0:
+            categoria = "B"
+        else:
+            categoria = "C"
+
+        # agregamos el nuevo campo diccionario
+
+        datos['categoria'] = categoria
+
+        actualizados += 1
+        resumen.append({
+            "titulo": datos['titulo'],
+            "calificacion": nota,
+            "categoria_asignada": categoria
+        })
+
+    return jsonify({
+        "status": "success",
+        "mensaje": "Categorías calculadas y agregadas exitosamente",
+        "total_actualizados": actualizados,
+        "libros": resumen
+    }), 200
 
 
 if __name__ == "__main__":

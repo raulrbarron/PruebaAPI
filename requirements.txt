@@ -1,0 +1,3 @@
+Ocupas un entorno virttual para ejecutar el codigo
+
+Para poder hacer las pruebas de los ejercicios esta el archivo test donde vienen los ejemplos de como hacerlo en POSTMAN

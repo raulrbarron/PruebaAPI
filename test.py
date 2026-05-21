@@ -1,35 +1,20 @@
-libros = {
-    1: {
-        "titulo": "Cien años de soledad",
-        "autor": "Gabriel García Márquez",
-        "anio": 1967,
-        "genero": "realismo mágico",
-        "disponible": True,
-        "calificacion": 9.5
-    },
-    2: {
-        "titulo": "1984",
-        "autor": "George Orwell",
-        "anio": 1949,
-        "genero": "distopía",
-        "disponible": True,
-        "calificacion": 9.2
-    },
-    3: {
-        "titulo": "El principito",
-        "autor": "Antoine de Saint-Exupéry",
-        "anio": 1943,
-        "genero": "fábula",
-        "disponible": False,
-        "calificacion": 8.8
-    }
+# todos los libros que tengan j.k sean eliminados DELETE
+
+# /libros/eliminar-autor?autor=George Orwell
+
+
+# quiero que todos los libros que tengan Harry sean del genero Literatur y esten disponibles POST
+{
+    "nombre": "Harry",
+    "genero": "Literatura",
+    "disponible": True
 }
-libros[4] = {
-    "titulo": "Nuevo libro",
-    "autor": "Autor",
-    "anio": 2020,
-    "genero": "novela",
-    "disponible": True,
-    "calificacion": 8.5
-}
-print(libros)
+
+# quiero que todos los libros que esten entre el año 1900 y 2000 tenga una calificacion de entre 8 y 9.7 PUT
+# /libros/calificar-por-epoca
+
+
+# quiero un endpoint que agregue valores al json con su tipo de dato POST
+# /libros/agregar-categoria
+
+# quiero que todos los libros que esten disponibles y sean de entre el numero n y el numero n2 sean categoria S+
